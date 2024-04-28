@@ -95,14 +95,14 @@
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../ece281-ice5/src/hdl/elevator_controller_fsm.vhd">
+      <File Path="$PPRDIR/../ece281-ice6/src/hdl/TDM4.vhd">
         <FileInfo>
           <Attr Name="AutoDisabled" Val="1"/>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../ece281-ice6/src/hdl/TDM4.vhd">
+      <File Path="$PPRDIR/src/hdl/controller_fsm.vhd">
         <FileInfo>
           <Attr Name="AutoDisabled" Val="1"/>
           <Attr Name="UsedIn" Val="synthesis"/>
