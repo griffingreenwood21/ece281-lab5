@@ -100,7 +100,6 @@ architecture top_basys3_arch of top_basys3 is
     end component ALU;
     
     signal w_reset  : std_logic;
-    signal w_adv    : std_logic;
     signal w_clk    : std_logic;
     signal w_cycle  : std_logic_vector (3 downto 0);
     signal w_A, w_B : std_logic_vector (7 downto 0);
@@ -138,7 +137,7 @@ begin
     controller_inst : controller_fsm
         port map (
             i_reset => w_reset,
-            i_adv   => w_adv,
+            i_adv   => btnC,
             o_cycle => w_cycle
         );
     twoscomp_decimal_inst   : twoscomp_decimal
@@ -161,7 +160,6 @@ begin
 	
 	-- CONCURRENT STATEMENTS ----------------------------
 	w_reset <= btnU;
-	w_adv   <= btnC;
 	
 	register_proc : process(w_cycle)
         begin
