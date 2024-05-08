@@ -24,9 +24,13 @@
 --| ALU OPCODES:
 --|
 --|     ADD     000
---|
---|
---|
+--|     SUB     001
+--|     OR      010
+--|     X       011
+--|     AND     100
+--|     X       101
+--|     LSHIFT  110
+--|     RSHIFT  111
 --|
 --+----------------------------------------------------------------------------
 library ieee;
@@ -36,20 +40,52 @@ library ieee;
 
 entity ALU is
 -- TODO
+    Port (
+        i_A         : in std_logic_vector (7 downto 0);
+        i_B         : in std_logic_vector (7 downto 0);
+        i_opcode    : in std_logic_vector (2 downto 0);
+        o_result    : out std_logic_vector (7 downto 0);
+        o_flags     : out std_logic_vector (2 downto 0)
+    );
 end ALU;
 
 architecture behavioral of ALU is 
   
 	-- declare components and signals
-
+    signal w_add_sub : std_logic_vector(8 downto 0);
+    signal w_or : std_logic_vector(7 downto 0);
+    signal w_and : std_logic_vector(7 downto 0);
+    signal w_shift : std_logic_vector(7 downto 0);
+    signal w_cin   : std_logic_vector(0 downto 0);
+    signal w_result : std_logic_vector(7 downto 0);
   
 begin
 	-- PORT MAPS ----------------------------------------
-
+    with i_opcode(2 downto 1) select
+    w_result <= w_add_sub(7 downto 0) when "00",
+                w_or when "01",
+                w_and when "10",
+                w_shift when "11",
+                "00000000" when others;
 	
+	w_or <= (i_A or i_B) when i_opcode(0) = '0';
 	
-	-- CONCURRENT STATEMENTS ----------------------------
+	w_and <= (i_A and i_B) when i_opcode(0) = '0';
 	
+	-- cin corresponds to subtract, which is controlled by opcode(0)
+	w_cin <= i_opcode(0 downto 0);
+	--w_add_sub <= std_logic_vector(unsigned(i_A) + unsigned(i_B) + unsigned(w_cin));
+	w_add_sub <= std_logic_vector(unsigned("0" & i_A) + unsigned("0" & i_B) + unsigned(w_cin));
+	o_flags(0) <= w_add_sub(8);
+	o_flags(1) <= '1' when w_result = "000000000" else
+	              '0';
+	o_flags(2) <= w_result(7);
+	
+	w_shift <= std_logic_vector(shift_left(unsigned(i_A), to_integer(unsigned(i_B(2 downto 0))))) when i_opcode(0) = '0' else
+	           std_logic_vector(shift_right(unsigned(i_A), to_integer(unsigned(i_B(2 downto 0))))) when i_opcode(0) = '1';
+	           
+	o_result <= w_result;
+	-- CONCURRENT STATEMENTS ---------------------------
 	
 	
 end behavioral;

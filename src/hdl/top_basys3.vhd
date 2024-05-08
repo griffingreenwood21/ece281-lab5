@@ -89,12 +89,22 @@ architecture top_basys3_arch of top_basys3 is
         );
     end component sevenSegDecoder;
     
+    component ALU is
+        Port (
+            i_A         : in std_logic_vector (7 downto 0);
+            i_B         : in std_logic_vector (7 downto 0);
+            i_opcode    : in std_logic_vector (2 downto 0);
+            o_result    : out std_logic_vector (7 downto 0);
+            o_flags     : out std_logic_vector (2 downto 0)
+        );
+    end component ALU;
+    
     signal w_reset  : std_logic;
+    signal w_adv    : std_logic;
     signal w_clk    : std_logic;
     signal w_cycle  : std_logic_vector (3 downto 0);
     signal w_A, w_B : std_logic_vector (7 downto 0);
     signal w_result : std_logic_vector (7 downto 0);
-    signal w_flags  : std_logic_vector (3 downto 0);
     signal w_bin    : std_logic_vector (7 downto 0);
     signal w_data   : std_logic_vector (3 downto 0);
     signal w_sign, w_hund, w_tens, w_ones   : std_logic_vector (3 downto 0);
@@ -103,6 +113,7 @@ architecture top_basys3_arch of top_basys3 is
 begin
 	-- PORT MAPS ----------------------------------------
     clock_divider_inst  : clock_divider
+    generic map (k_DIV => 50000)
         port map (
             i_clk   => clk,
             i_reset => w_reset,
@@ -127,7 +138,7 @@ begin
     controller_inst : controller_fsm
         port map (
             i_reset => w_reset,
-            i_adv   => btnC,
+            i_adv   => w_adv,
             o_cycle => w_cycle
         );
     twoscomp_decimal_inst   : twoscomp_decimal
@@ -138,11 +149,34 @@ begin
             o_tens      => w_tens,
             o_ones      => w_ones
         );
-            
+    ALU_inst    : ALU
+        port map (
+            i_A         => w_A,
+            i_B         => w_B,
+            i_opcode    => sw(2 downto 0),
+            o_flags     => led(15 downto 13),
+            o_result    => w_result
+        );
 	
 	
 	-- CONCURRENT STATEMENTS ----------------------------
 	w_reset <= btnU;
+	w_adv   <= btnC;
+	
+	register_proc : process(w_cycle)
+        begin
+            if w_cycle = "0001" then
+                w_A <= sw(7 downto 0);
+            else if w_cycle = "0010" then
+                w_B <= sw(7 downto 0);
+            else 
+                w_A <= w_A;
+                w_B <= w_B;
+            end if;
+        end if;
+                
+        
+        end process register_proc;    
 	
 	
 end top_basys3_arch;
