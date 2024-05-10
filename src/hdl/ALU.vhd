@@ -53,6 +53,8 @@ architecture behavioral of ALU is
   
 	-- declare components and signals
     signal w_add_sub : std_logic_vector(8 downto 0);
+    signal w_add : std_logic_vector(8 downto 0);
+    signal w_sub : std_logic_vector(8 downto 0);
     signal w_or : std_logic_vector(7 downto 0);
     signal w_and : std_logic_vector(7 downto 0);
     signal w_shift : std_logic_vector(7 downto 0);
@@ -74,10 +76,12 @@ begin
 	
 	-- cin corresponds to subtract, which is controlled by opcode(0)
 	w_cin <= i_opcode(0 downto 0);
-	--w_add_sub <= std_logic_vector(unsigned(i_A) + unsigned(i_B) + unsigned(w_cin));
-	w_add_sub <= std_logic_vector(unsigned("0" & i_A) + unsigned("0" & i_B) + unsigned(w_cin));
-	o_flags(0) <= w_add_sub(8);
-	o_flags(1) <= '1' when w_result = "000000000" else
+	w_add <= std_logic_vector(unsigned("0" & i_A) + unsigned("0" & i_B));
+	w_sub <= std_logic_vector(unsigned("0" & i_A) + not unsigned("0" & i_B) + unsigned(w_cin));
+	w_add_sub <=  w_sub when w_cin = "1" else
+	              w_add;
+	o_flags(0) <= w_add_sub(8) when i_opcode(2 downto 1) = "00";
+	o_flags(1) <= '1' when w_result = "00000000" else
 	              '0';
 	o_flags(2) <= w_result(7);
 	

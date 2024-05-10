@@ -60,6 +60,7 @@ use IEEE.STD_LOGIC_1164.ALL;
 entity controller_fsm is
     Port ( i_reset   : in  STD_LOGIC;
            i_adv     : in  STD_LOGIC;
+           i_clk    : in STD_LOGIC;
            o_cycle   : out STD_LOGIC_VECTOR (3 downto 0)		   
 		 );
 end controller_fsm;
@@ -68,6 +69,7 @@ architecture Behavioral of controller_fsm is
 
 type state is (state0, state1, state2, state3);
 signal f_Q, f_Q_next : state;
+signal w_adv : std_logic := '1';
 
 begin
     -- CONCURRENT STATEMENTS ------------------------------------------------------------------------------
@@ -83,7 +85,7 @@ begin
         o_cycle <= "0001" when state0,
                    "0010" when state1,
                    "0100" when state2,
-                   "1000" when others;
+                   "1000" when state3;
 	
 	-------------------------------------------------------------------------------------------------------
 	
@@ -92,12 +94,17 @@ begin
 	register_proc : process (i_adv, i_reset)
     begin
     --asynchronous reset
+        if rising_edge(i_clk) then
         if i_reset = '1' then
-            f_Q <= state0;
+            f_Q <= state3;
         
-        elsif (i_adv = '1') then
+        elsif (i_adv = '1' and w_adv = '1') then
             f_Q <= f_Q_next;
+            w_adv <= '0';
+        elsif (i_adv = '0' and w_adv = '0') then
+             w_adv <= '1' after 1000 ms;
 
+        end if;
         end if;
     
 	end process register_proc;	

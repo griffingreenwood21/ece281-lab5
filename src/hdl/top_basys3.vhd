@@ -31,7 +31,7 @@ entity top_basys3 is
         clk  : in std_logic;
         btnU : in std_logic;
         btnC : in std_logic;
-        sw   : in std_logic_vector (15 downto 0);
+        sw   : in std_logic_vector (7 downto 0);
         led  : out std_logic_vector (15 downto 0);
         seg  : out std_logic_vector (6 downto 0);
         an   : out std_logic_vector (3 downto 0)
@@ -55,6 +55,7 @@ architecture top_basys3_arch of top_basys3 is
     component controller_fsm is
         Port ( i_reset   : in  STD_LOGIC;
                i_adv     : in  STD_LOGIC;
+               i_clk    : in STD_LOGIC;
                o_cycle   : out STD_LOGIC_VECTOR (3 downto 0)           
              );
     end component controller_fsm;
@@ -67,6 +68,7 @@ architecture top_basys3_arch of top_basys3 is
                i_D2         : in  STD_LOGIC_VECTOR (k_WIDTH - 1 downto 0);
                i_D1         : in  STD_LOGIC_VECTOR (k_WIDTH - 1 downto 0);
                i_D0         : in  STD_LOGIC_VECTOR (k_WIDTH - 1 downto 0);
+               i_cycle      : in  STD_LOGIC_VECTOR (3 downto 0);
                o_data        : out STD_LOGIC_VECTOR (k_WIDTH - 1 downto 0);
                o_sel        : out STD_LOGIC_VECTOR (3 downto 0)    -- selected data line (one-cold)
         );
@@ -107,6 +109,7 @@ architecture top_basys3_arch of top_basys3 is
     signal w_bin    : std_logic_vector (7 downto 0);
     signal w_data   : std_logic_vector (3 downto 0);
     signal w_sign, w_hund, w_tens, w_ones   : std_logic_vector (3 downto 0);
+    signal w_flags  : std_logic_vector (2 downto 0);
     
   
 begin
@@ -131,6 +134,7 @@ begin
             i_D2    => w_hund,
             i_D1    => w_tens,
             i_D0    => w_ones,
+            i_cycle => w_cycle,
             o_data  => w_data,
             o_sel   => an
         );
@@ -138,7 +142,8 @@ begin
         port map (
             i_reset => w_reset,
             i_adv   => btnC,
-            o_cycle => w_cycle
+            o_cycle => w_cycle,
+            i_clk => clk
         );
     twoscomp_decimal_inst   : twoscomp_decimal
         port map (
@@ -153,13 +158,23 @@ begin
             i_A         => w_A,
             i_B         => w_B,
             i_opcode    => sw(2 downto 0),
-            o_flags     => led(15 downto 13),
+            o_flags     => w_flags,
             o_result    => w_result
         );
 	
+	with w_cycle select
+	w_bin <= w_A when "0001",
+	         w_B when "0010",
+	         w_result when "0100",
+	         "00000000" when others;
+                       
+    led(15 downto 13) <= w_flags when w_cycle = "0100" else
+                         "000";                   
 	
 	-- CONCURRENT STATEMENTS ----------------------------
 	w_reset <= btnU;
+	led(12 downto 4) <= "000000000";
+	led(3 downto 0) <= w_cycle;
 	
 	register_proc : process(w_cycle)
         begin
