@@ -68,7 +68,6 @@ architecture top_basys3_arch of top_basys3 is
                i_D2         : in  STD_LOGIC_VECTOR (k_WIDTH - 1 downto 0);
                i_D1         : in  STD_LOGIC_VECTOR (k_WIDTH - 1 downto 0);
                i_D0         : in  STD_LOGIC_VECTOR (k_WIDTH - 1 downto 0);
-               i_cycle      : in  STD_LOGIC_VECTOR (3 downto 0);
                o_data        : out STD_LOGIC_VECTOR (k_WIDTH - 1 downto 0);
                o_sel        : out STD_LOGIC_VECTOR (3 downto 0)    -- selected data line (one-cold)
         );
@@ -134,7 +133,6 @@ begin
             i_D2    => w_hund,
             i_D1    => w_tens,
             i_D0    => w_ones,
-            i_cycle => w_cycle,
             o_data  => w_data,
             o_sel   => an
         );
